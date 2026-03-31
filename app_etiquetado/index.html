@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Etiquetado de Screenshots</title>
+  <script src="https://unpkg.com/lab.js@20.2.4/dist/lab.js"></script>
+  <style>
+    .image-container {
+      width: 100%;
+      height: 80vh;
+      overflow: auto; /* Scroll vertical y horizontal si es necesario */
+      border: 1px solid #ccc;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .image-container img {
+      max-width: 100%;
+      transition: transform 0.2s;
+      cursor: grab;
+    }
+
+    .labels {
+      display: flex;
+      gap: 20px;
+      justify-content: flex-start;
+      margin-bottom: 20px;
+    }
+
+    .labels label {
+      display: block;
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+<script>
+window.onload = function() {
+  const images = [
+    "images/https___larepublica_es_2026_03_30_redes_sociales_en_la_mira_meta_y_youtube_condenadas_por_poner_en_riesgo_a_los_menores_.png",
+    "images/https___radiomaria_org_ar_programacion_solo_por_hoy_inteligencia_artificial_redes_sociales_salud_mental_.png",
+    "images/https___www_amcumbre_com_noticias_2026_03_30_1217_refuerzan_la_prevencion_del_grooming_con_una_capacitacion_clave_en_neuquen.png",
+    "images/https___www_noticiasnqn_com_ar_noticias_2026_03_30_330255_amplian_la_acusacion_contra_un_entrenador_de_futbol_por_delitos_sexuales_contra_adolescentes.png"
+  ];
+
+  const study = new lab.flow.Sequence({
+    content: images.map((imgPath, idx) =>
+      new lab.html.Screen({
+        el: document.body,
+
+        parameters: {
+          image: imgPath
+        },
+
+        content: `
+          <h3>Imagen ${idx + 1} de ${images.length}</h3>
+          <div class="image-container">
+            <img src="${imgPath}" id="imgZoom">
+          </div>
+
+          <div class="labels">
+            <div>
+              <label>Credibilidad (1-5):</label>
+              <select name="credibility" required>
+                <option value="" disabled selected>Selecciona...</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+              </select>
+            </div>
+            <div>
+              <label>Calidad (1-5):</label>
+              <select name="quality" required>
+                <option value="" disabled selected>Selecciona...</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+              </select>
+            </div>
+            <div>
+              <label>Correctitud (1-5):</label>
+              <select name="correctness" required>
+                <option value="" disabled selected>Selecciona...</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+              </select>
+            </div>
+          </div>
+
+          <button id="nextBtn">Siguiente</button>
+        `,
+
+        responses: {
+          type: "html",
+          recorded: ["credibility", "quality", "correctness", "image"],
+          submit: true
+        },
+
+        events: {
+          "click #nextBtn": function() {
+            const cred = this.options.el.querySelector("select[name='credibility']").value;
+            const qual = this.options.el.querySelector("select[name='quality']").value;
+            const corr = this.options.el.querySelector("select[name='correctness']").value;
+
+            if (!cred || !qual || !corr) {
+              alert("Selecciona una opción en todas las dimensiones antes de continuar.");
+              return;
+            }
+
+            this.respond({
+              credibility: cred,
+              quality: qual,
+              correctness: corr
+            });
+          },
+
+          // Zoom con la rueda del ratón
+          "wheel #imgZoom": function(e) {
+            e.preventDefault();
+            const img = e.target;
+            const currentScale = img.dataset.scale ? parseFloat(img.dataset.scale) : 1;
+            let delta = e.deltaY < 0 ? 0.1 : -0.1;
+            let newScale = Math.min(Math.max(currentScale + delta, 0.5), 3); // zoom entre 0.5x y 3x
+            img.style.transform = `scale(${newScale})`;
+            img.dataset.scale = newScale;
+          }
+        }
+      })
+    )
+  });
+
+  study.on("end", () => {
+    const csv = study.options.datastore.exportCsv();
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "resultados.csv";
+    a.click();
+  });
+
+  study.run();
+};
+</script>
+</body>
+</html>
