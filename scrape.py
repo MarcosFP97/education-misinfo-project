@@ -7,7 +7,7 @@ from googlenewsdecoder import gnewsdecoder
 
 if __name__=="__main__":
     waybackshot = WaybackShot()
-    queries = ["riesgos redes sociales adolescentes", "derechos adolescentes afectados redes sociales", "cómo frenar la adicción redes sociales"]
+    queries = ["derechos adolescentes afectados redes sociales", "prevención de riesgos redes sociales", "riesgos redes sociales adolescentes"] #### IAs generativas:  ¿Cómo puede afectar las redes sociales en la salud mental de los adolescentes?, ¿Cómo crees que se puede frenar la adicción a las redes sociales?, ¿Crees que las redes sociales aumentan el ciberbullying?
     queries_x = ["ciberacoso"]
     if sys.argv[1] == "X":
         # corvx = Corvx()
